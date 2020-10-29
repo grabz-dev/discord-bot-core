@@ -1,0 +1,48 @@
+{
+    "category": {
+        "": {
+            "err_role_mention_not_provided": "You must ping the role, or type the role ID.",
+            "err_role_mention_not_correct": "Incorrect role ID specified, or the mention/ping was typed incorrectly.",
+            "err_role_not_on_server": "The specified role is not part of this server."
+        },
+        "roles": {
+            "err_name_not_provided": "You must provide the role name category.",
+            "err_role_not_on_server": "The specified role is not part of this server.",
+            "role_add_success": "Role association set."
+        },
+        "channels": {
+            "channel_persist_added": "Bot messages will no longer be automatically removed in this channel.",
+            "channel_persist_removed": "Bot messages will now be automatically removed in this channel."
+        }
+    },
+    "command": {
+        "log": {
+            "": [
+                "!%name% <days>",
+                "Get the log file from the current day.",
+                "%space%<days> - An optional amount of days in the past to post the log from. 0 by default."
+            ]
+        },
+        "help": {
+            "": [
+                "!%name%",
+                "Show help for all commands available to you."
+            ]
+        },
+        "role": {
+            "": [
+                "!%name% <string> <id>",
+                "Associate a string with a role ID for usage with commands.",
+                "%space%<string> - An internal string ID for the role.",
+                "%space%<id> - The role mention/ping, or the role ID."
+            ]
+        },
+        "channel": {
+            "persist": [
+                "!%name% <bool>",
+                "Toggle whether the current channel will delete non-permanent bot messages.",
+                "%space%<bool> - 0 or 1."
+            ]
+        }
+    }
+}

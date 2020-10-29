@@ -1,0 +1,14 @@
+{
+  "name": "@grabz-dev/discord-bot-core",
+  "version": "0.1.0",
+  "description": "",
+  "main": "bot.js",
+  "author": "Grabz#4707",
+  "type": "module",
+  "dependencies": {
+    "discord.js": "^12.4.1",
+    "tingodb": "github:sergeyksv/tingodb#master",
+    "mysql": "^2.17.1",
+    "node-graceful-shutdown": "^1.0.3"
+  }
+}
