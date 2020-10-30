@@ -109,8 +109,8 @@ function populateEmbedFieldsFromLocale(embed, command, hd) {
 
         let row = hd[i];
 
-        row = row.replaceAll("%space%", space);
-        row = row.replaceAll("%name%", command.baseNames[0] + (command.commandNames[0].length > 0 ? " " + command.commandNames[0] : ""));
+        row = Util.String.replaceAll(row, "%space%", space);
+        row = Util.String.replaceAll(row, "%name%", command.baseNames[0] + (command.commandNames[0].length > 0 ? " " + command.commandNames[0] : ""));
 
         let nameIndex = row.indexOf("<n>");
         let valueIndex = row.indexOf("<v>");

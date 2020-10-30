@@ -35,7 +35,7 @@ export function checkCommand(m) {
     //If a valid category name is found after all thats left, assume the user is querying help for the category.
     //This means we don't really need the rest of this function.
     //Examples: !help exp, !exp help.
-    if(str.indexOf("help") > -1) {
+    if(str.toLowerCase().indexOf("help") > -1) {
         let categoryName = str.replace("help", "");
         categoryName = categoryName.trim();
         let category = commandsByCategory.get(categoryName);
@@ -48,7 +48,7 @@ export function checkCommand(m) {
 
     //If we found help at the beginning, remove it from the command string, and assume it isn't there.
     //If a command is found after that, post its help message.
-    if(str.startsWith("help")) {
+    if(str.toLowerCase().startsWith("help")) {
         isHelp = true;
         str = str.substring(4);
         str = str.trimLeft();
@@ -59,7 +59,7 @@ export function checkCommand(m) {
     /** @type {Core.Command[]|null} */ let commandsArr = null;
     for(const names of commandsByName.keys()) {
         for(const name of names.split(",")) {
-            if(str.split(" ")[0] === name) {
+            if(str.toLowerCase().split(" ")[0] === name) {
                 baseName = name;
                 commandsArr = commandsByName.get(names) || null;
                 break;
@@ -95,7 +95,7 @@ export function checkCommand(m) {
 
             if(name.length === 0) fallback = c;
 
-            if(str.split(" ")[0] === name) {
+            if(str.toLowerCase().split(" ")[0] === name) {
                 str = str.substring(name.length);
                 command = c;
                 found = true;
@@ -110,7 +110,7 @@ export function checkCommand(m) {
 
     str = str.trimLeft();
     //If we found help right before the argument list, assume the user is asking for help on this command.
-    if(str.startsWith("help"))
+    if(str.toLowerCase().startsWith("help"))
         isHelp = true;
 
     //We've now passed syntax validation and found a command to execute.

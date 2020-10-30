@@ -1,5 +1,7 @@
 'use strict';
 
+import { Util } from '../structures/Util.js';
+
 export class Locale {
     /**
      * @param {string} coreLocale - JSON string of a language file from locale.
@@ -69,7 +71,7 @@ export class Locale {
                 return strname;
 
             for(let i = 0; i < args.length; i++)
-                m = m.replaceAll("%" + i, args[i]);
+                m = Util.String.replaceAll(m, "%" + i, args[i]);
 
             return m;
         }

@@ -29,7 +29,7 @@ export function initModuleEvents() {
     client.on('message', (message) => { //check each message to see if it's a command
         if(message.author.bot) return;
         if(message.type !== 'DEFAULT') return;
-
+        
         if(message.channel instanceof Discord.DMChannel) {
             try {
                 for(const key of modules.keys()) {
@@ -77,9 +77,11 @@ export function initModuleEvents() {
     });
 
     client.on('messageUpdate', (messageOld, messageNew) => {
-        if(messageOld instanceof Discord.Message && messageOld.author.bot) return;
-        if(messageNew instanceof Discord.Message && messageNew.author.bot) return;
-        if(messageOld.type !== 'DEFAULT' || messageNew.type !== 'DEFAULT') return;
+        if(!messageOld.partial && messageOld.author.bot) return;
+        if(!messageNew.partial && messageNew.author.bot) return;
+
+        if(messageOld.type && messageOld.type !== 'DEFAULT') return;
+        if(messageNew.type && messageNew.type !== 'DEFAULT') return;
 
         try {
             for(const key of modules.keys()) {
@@ -97,8 +99,8 @@ export function initModuleEvents() {
     });
 
     client.on('messageDelete', message => {
-        if(message instanceof Discord.Message && message.author.bot) return;
-        if(message.type !== 'DEFAULT') return;
+        if(!message.partial && message.author.bot) return;
+        if(message.type && message.type !== 'DEFAULT') return;
 
         try {
             for(const key of modules.keys()) {

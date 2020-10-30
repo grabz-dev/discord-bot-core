@@ -18,7 +18,7 @@ const Engine = TingoDB({
 /**
  * A database session object.
  */
-class Session {
+export class Session {
     constructor() { }
 }
 

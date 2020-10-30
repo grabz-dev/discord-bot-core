@@ -54,6 +54,8 @@ import { MongoWrapper } from './structures/MongoWrapper.js';
 import { SQLWrapper } from './structures/SQLWrapper.js';
 import { Util } from './structures/Util.js';
 
+import Roles from './modules/Roles.js';
+
 export { logger };
 export class Core extends EventEmitter {
     constructor() {
@@ -291,7 +293,7 @@ async function init() {
         this.addCommand("help", "", "misc", "EVERYONE", displayHelp.bind(this));
         this.addCommand("role", "", "core", null, (message, args, arg) => {
             // @ts-ignore
-            return /** @type {BotModule} */ (this.data.modules.get(require("./BotCore/modules/Roles.js")))["role"](message, args, arg, {});
+            return /** @type {BotModule} */ this.data.modules.get(Roles)["role"](message, args, arg, {});
         });
 
         this.emit("ready", entry);
