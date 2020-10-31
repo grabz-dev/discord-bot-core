@@ -93,8 +93,8 @@ export class Module extends EventEmitter {
 
     /**
      * Called when a message is edited.
-     * @param {Discord.Message|Discord.PartialMessage|null} messageOld - The old message.
-     * @param {Discord.Message|Discord.PartialMessage} messageNew - The new message.
+     * @param {Discord.Message} messageOld - The old message.
+     * @param {Discord.Message} messageNew - The new message.
      */
     onMessageUpdate(messageOld, messageNew) {}
 

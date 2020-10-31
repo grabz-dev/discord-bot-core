@@ -26,7 +26,7 @@ export function initModuleEvents() {
         }).catch(logger.error);
     });
 
-    client.on('message', (message) => { //check each message to see if it's a command
+    client.on('message', async message => { //check each message to see if it's a command
         if(message.author.bot) return;
         if(message.type !== 'DEFAULT') return;
         
@@ -62,7 +62,7 @@ export function initModuleEvents() {
         let guild = message.guild;
 
         if(member == null && guild != null)
-            member = guild.members.resolve(message.author.id);
+            member = await guild.members.fetch(message.author.id);
 
         if(!member || !guild)
             return;
@@ -76,31 +76,44 @@ export function initModuleEvents() {
         }
     });
 
-    client.on('messageUpdate', (messageOld, messageNew) => {
-        if(!messageOld.partial && messageOld.author.bot) return;
-        if(!messageNew.partial && messageNew.author.bot) return;
+    client.on('messageUpdate', async (partialOld, partialNew) => {
+        try {
+            if(partialNew.partial) var messageNew = await partialNew.fetch();
+            else var messageNew = partialNew;
+        } catch(err) {
+            logger.error(err);
+            return;
+        }
+    
+        if(messageNew.author.bot) return;
+        if(messageNew.type !== 'DEFAULT') return;
 
-        if(messageOld.type && messageOld.type !== 'DEFAULT') return;
-        if(messageNew.type && messageNew.type !== 'DEFAULT') return;
+        try {
+            if(partialOld.partial) var messageOld = await partialOld.fetch();
+            else var messageOld = partialOld;
+        } catch(err) {
+            logger.error(err);
+            return;
+        }
+    
+        if(messageOld.author.bot) return;
+        if(messageOld.type !== 'DEFAULT') return;
 
         try {
             for(const key of modules.keys()) {
                 const module = /** @type {Module} */ (modules.get(key));
                 if(typeof module.onMessageUpdate === 'function') {
-                    if(messageOld.content === messageNew.content) 
-                        module.onMessageUpdate(null, messageNew);
-                    else
-                        module.onMessageUpdate(messageOld, messageNew);
+                    module.onMessageUpdate(messageOld, messageNew);
                 }
             }
-        } catch(err) {
-            logger.error(err);
-        }
+        } catch(err) { logger.error(err); }
     });
 
-    client.on('messageDelete', message => {
-        if(!message.partial && message.author.bot) return;
-        if(message.type && message.type !== 'DEFAULT') return;
+    client.on('messageDelete', async message => {
+        if(!message.partial) {
+            if(message.author.bot) return;
+            if(message.type !== 'DEFAULT') return;
+        }
 
         try {
             for(const key of modules.keys()) {
