@@ -170,7 +170,7 @@ export class Core extends EventEmitter {
         let pass = false;
         guildRoles.forEach((roleSnowflake, roleDefName) => {
             //If the command can be executed by a role that the member has, execute the command.
-            if(command.authorityLevel.includes(roleDefName) && member.roles.resolve(roleSnowflake)) {
+            if(command.authorityLevel.includes(roleDefName) && member.roles.cache.get(roleSnowflake)) {
                 pass = true;
                 return;
             }

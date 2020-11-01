@@ -49,12 +49,15 @@ export default class Roles extends Module {
         if(snowflake == null) {
             return this.bot.locale.category('', 'err_role_mention_not_correct');
         }
-
-        if(!m.guild.roles.resolve(snowflake)) {
-            return this.bot.locale.category('', 'err_role_not_on_server');
-        }
+        let id = snowflake;
 
         this.bot.tdb.session(m.guild, 'roles', async session => {
+            let role = await m.guild.roles.fetch(id);
+            if(!role) {
+                m.channel.send(this.bot.locale.category('', 'err_role_not_on_server')).catch(logger.error);
+                return;
+            }
+
             await this.bot.tdb.update(session, m.guild, 'roles', 'roles', { upsert: true }, { _id: name }, { _id: name, rid: snowflake });
             this.emit('rolesChanged', m.guild);
 
