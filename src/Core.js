@@ -58,8 +58,14 @@ import Roles from './modules/Roles.js';
 
 export { logger };
 export class Core extends EventEmitter {
-    constructor() {
+    /**
+     * 
+     * @param {Discord.Snowflake|null} overrideMemberId 
+     */
+    constructor(overrideMemberId) {
         super();
+
+        this.overrideMemberId = overrideMemberId;
 
         if(instance != null) return instance;
         instance = this;
@@ -162,6 +168,9 @@ export class Core extends EventEmitter {
         if(Util.isMemberAdmin(member) || command.authorityLevel.includes("EVERYONE"))
             return true;
 
+        if(this.overrideMemberId != null && member.id === this.overrideMemberId)
+            return true;
+
         //If no role definitions have been added to this guild, no point checking.
         let guildRoles = this.data.roles.get(member.guild.id);
         if(guildRoles == null)
@@ -180,13 +189,19 @@ export class Core extends EventEmitter {
 
     /**
      * Add a usable command to the bot.
-     * @param {string | string[]} baseNames - The defining name for the command.
-     * @param {string | string[] | null} commandNames - The subname for the command, or an array containing the subname, followed by aliases.
-     * @param {string | string[]} categoryNames - The help category this command will be slotted into.
-     * @param {string | string[] | null} authorityLevel - The custom bot role ID's that can execute this command. Blank can only be used by Administrators.
+     * @param {object} settings - 
+     * @param {string | string[]} settings.baseNames - The defining name for the command.
+     * @param {string | string[] | null} settings.commandNames - The subname for the command, or an array containing the subname, followed by aliases.
+     * @param {string | string[]} settings.categoryNames - The help category this command will be slotted into.
+     * @param {string | string[] | null} settings.authorityLevel - The custom bot role ID's that can execute this command. Blank can only be used by Administrators.
      * @param {Command.Callback} callback - The callback to run when this command is executed.
      */
-    addCommand(baseNames, commandNames, categoryNames, authorityLevel, callback) { //add a command to the bot
+    addCommand(settings, callback) { //add a command to the bot
+        let baseNames = settings.baseNames;
+        let commandNames = settings.commandNames;
+        let categoryNames = settings.categoryNames;
+        let authorityLevel = settings.authorityLevel;
+
         if(typeof baseNames === "string") baseNames = [baseNames];
 
         if(commandNames == null) commandNames = "";
@@ -290,11 +305,22 @@ async function init() {
         initModuleEvents.bind(this)();
 
         this.removeAllCommands();
-        this.addCommand("help", "", "misc", "EVERYONE", displayHelp.bind(this));
-        this.addCommand("role", "", "core", null, (message, args, arg) => {
+        this.addCommand({
+            baseNames: 'role',
+            commandNames: '',
+            categoryNames: [':diamond_shape_with_a_dot_inside: Core', 'core'],
+            authorityLevel: null
+        }, (message, args, arg) => {
             // @ts-ignore
             return /** @type {BotModule} */ this.data.modules.get(Roles)["role"](message, args, arg, {});
         });
+
+        this.addCommand({
+            baseNames: 'help',
+            commandNames: '',
+            categoryNames: [':game_die: Miscellaneous', 'miscellaneous', 'misc'],
+            authorityLevel: 'EVERYONE'
+        }, displayHelp.bind(this));
 
         this.emit("ready", entry);
     });
