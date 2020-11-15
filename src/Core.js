@@ -291,14 +291,7 @@ async function init() {
         for(const guild of client.guilds.cache.values())
             await data.tdb.createDatabase(guild);
 
-        try {
-            await data.sql.create(null);
-            for(const guild of client.guilds.cache.values())
-                await data.sql.create(guild);
-        }
-        catch(e) {
-            logger.warn("SQL database is offline.");
-        }
+        await data.sql.init();
 
         const entry = getEntry(data);
         await initModules.bind(this)(entry);

@@ -27,6 +27,34 @@ export default class Roles extends Module {
     init(guild) {
         super.init(guild);
         this.emit('rolesChanged', guild);
+
+        this.bot.sql.transaction(async query => {
+            await query(`CREATE TABLE IF NOT EXISTS roles_roles (
+                            id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                            guild_id VARCHAR(64) NOT NULL,
+                            name VARCHAR(128) NOT NULL,
+                            role_id VARCHAR(64) NOT NULL
+                         )`);
+        }).then(() => {
+            /** @type {any[]} */
+            var documents;
+            this.bot.tdb.session(guild, 'roles', async session => {
+                documents = await this.bot.tdb.find(session, guild, 'roles', 'roles', {}, {}, { rid: 1 });
+            }).then(() => {
+                this.bot.sql.transaction(async query => {
+                    for(let document of documents) {
+                        /** @type {any[]} */
+                        let results = (await query(`SELECT * FROM roles_roles
+                                                    WHERE guild_id = '${guild.id}' AND name = '${document._id}'`)).results;
+                        
+                        if(results.length <= 0) {
+                            await query(`INSERT INTO roles_roles (guild_id, name, role_id)
+                                         VALUES ('${guild.id}', '${document._id}', '${document.rid}')`);
+                        }
+                    }
+                }).catch(logger.error);
+            }).catch(logger.error);
+        }).catch(logger.error);
     }
 
     /**
@@ -46,22 +74,35 @@ export default class Roles extends Module {
             return this.bot.locale.category('', 'err_role_mention_not_provided');
 
         let snowflake = Util.getSnowflakeFromDiscordPing(args[1]);
-        if(snowflake == null) {
+        if(snowflake == null)
             return this.bot.locale.category('', 'err_role_mention_not_correct');
-        }
+            
         let id = snowflake;
 
-        this.bot.tdb.session(m.guild, 'roles', async session => {
-            let role = await m.guild.roles.fetch(id);
+        this.bot.sql.transaction(async query => {
+            let role = await m.guild.roles.fetch(id).catch(() => {});
             if(!role) {
                 m.channel.send(this.bot.locale.category('', 'err_role_not_on_server')).catch(logger.error);
                 return;
             }
 
-            await this.bot.tdb.update(session, m.guild, 'roles', 'roles', { upsert: true }, { _id: name }, { _id: name, rid: snowflake });
-            this.emit('rolesChanged', m.guild);
+            /** @type {any[]} */
+            let results = (await query(`SELECT name, role_id FROM roles_roles
+                                        WHERE guild_id = '${m.guild.id}' AND name = '${name}'
+                                        FOR UPDATE`)).results;
+            
+            if(results.length > 0) {
+                await query(`UPDATE roles_roles SET role_id = '${id}'
+                             WHERE guild_id = '${m.guild.id}' AND name = '${name}'`);
+            }
+            else {
+                await query(`INSERT INTO roles_roles (guild_id, name, role_id)
+                             VALUES ('${m.guild.id}', '${name}', '${id}')`);
+            }
 
             m.channel.send(this.bot.locale.category('roles', 'role_add_success')).catch(logger.error);
+        }).then(() => {
+            this.emit('rolesChanged', m.guild);
         }).catch(logger.error);
     }
 }

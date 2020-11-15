@@ -58,11 +58,12 @@ export function initModuleEvents() {
         
         //Bot command check follow
 
+        /** @type {Discord.GuildMember|null|void} */
         let member = message.member;
         let guild = message.guild;
 
         if(member == null && guild != null)
-            member = await guild.members.fetch(message.author.id);
+            member = await guild.members.fetch(message.author.id).catch(()=>{});
 
         if(!member || !guild)
             return;

@@ -30,20 +30,21 @@ export async function initModules(entry) {
     let roles = /** @type {Roles | undefined} */(this.data.modules.get(Roles));
     if(!roles) throw 'Required core module Roles not found.';
     roles.on('rolesChanged', guild => {
-        this.data.tdb.session(guild, 'roles', async session => {
-            this.data.tdb.find(session, guild, 'roles', 'roles', {}, {}, { rid: 1 }).then(documents => {
-                let roleStrings = this.data.roles.get(guild.id);
-                if(roleStrings) roleStrings.clear();
-                else {
-                    let c = new Discord.Collection();
-                    this.data.roles.set(guild.id, c);
-                    roleStrings = c;
-                }
-                for(let document of documents) 
-                    // @ts-ignore
-                    roleStrings.set(document._id, document.rid);
-            }).catch(logger.error);
-        }).catch(logger.error);
+        this.data.sql.transaction(async query => {
+            let roleStrings = this.data.roles.get(guild.id);
+            if(roleStrings) roleStrings.clear();
+            else {
+                let c = new Discord.Collection();
+                this.data.roles.set(guild.id, c);
+                roleStrings = c;
+            }
+
+            /** @type {any[]} */
+            let results = (await query(`SELECT * FROM roles_roles WHERE guild_id = '${guild.id}'`)).results;
+            for(let result of results)
+                // @ts-ignore
+                roleStrings.set(result.name, result.role_id);
+        });
     });
 
     logger.info('Searching custom modules...');

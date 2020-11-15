@@ -86,7 +86,7 @@ export class MongoWrapper {
         /** @type {Discord.Collection<Discord.Snowflake, {db: any, guildId: string, locked: boolean, waiting: ((value?: any) => void)[]}>} */
         this.dbs = new Discord.Collection();
 
-        setTimeout(loop.bind(this), 1000 * 10);
+        setTimeout(loop.bind(this), 1000 * 60 * 60 * 8);
 
         onShutdown(async () => {
             var timer = 0;
