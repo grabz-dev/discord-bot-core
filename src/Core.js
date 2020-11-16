@@ -73,6 +73,9 @@ export class Core extends EventEmitter {
         this.firstConnect = true;
         /** @type {checkCommand} */
         this.checkCommand = checkCommand;
+        /** @type {Discord.Client} */
+        this.client;
+        
         init.bind(this)();
     }
 
@@ -246,6 +249,7 @@ async function init() {
     const client = new Discord.Client({
         partials: ['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE', 'REACTION'],
     });
+    this.client = client;
 
     /** @type {Data} */
     const data = {
