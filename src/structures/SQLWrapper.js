@@ -7,6 +7,8 @@ import { onShutdown } from 'node-graceful-shutdown';
 import { logger } from '../Core.js';
 import { Util } from './Util.js';
 
+/** @typedef {(s: string) => Promise<{results: any, fields: MySQL.FieldInfo[] | undefined}>} Query */
+
 /**
  * 
  * @param {{user: string, password: string}} account 

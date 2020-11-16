@@ -26,7 +26,6 @@ export default class Roles extends Module {
     /** @param {Discord.Guild} guild - Current guild. */
     init(guild) {
         super.init(guild);
-        this.emit('rolesChanged', guild);
 
         this.bot.sql.transaction(async query => {
             await query(`CREATE TABLE IF NOT EXISTS roles_roles (
@@ -36,6 +35,8 @@ export default class Roles extends Module {
                             role_id VARCHAR(64) NOT NULL
                          )`);
         }).then(() => {
+            this.emit('rolesChanged', guild);
+
             /** @type {any[]} */
             var documents;
             this.bot.tdb.session(guild, 'roles', async session => {
