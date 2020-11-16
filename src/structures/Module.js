@@ -1,7 +1,6 @@
 'use strict';
 
 /** @typedef {import('../Core').Entry} Core.Entry */
-/** @typedef {import('./MongoWrapper')} MongoWrapper */
 /** @typedef {import('./SQLWrapper')} SQLWrapper */
 
 /**
@@ -19,11 +18,6 @@ export class Module extends EventEmitter {
     /**
      * @name BotModule#bot
      * @type {Core.Entry}
-     */
-
-    /**
-     * @name BotModule#db
-     * @type {MongoWrapper}
      */
 
     /**

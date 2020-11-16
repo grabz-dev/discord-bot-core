@@ -36,25 +36,6 @@ export default class Roles extends Module {
                          )`);
         }).then(() => {
             this.emit('rolesChanged', guild);
-
-            /** @type {any[]} */
-            var documents;
-            this.bot.tdb.session(guild, 'roles', async session => {
-                documents = await this.bot.tdb.find(session, guild, 'roles', 'roles', {}, {}, { rid: 1 });
-            }).then(() => {
-                this.bot.sql.transaction(async query => {
-                    for(let document of documents) {
-                        /** @type {any[]} */
-                        let results = (await query(`SELECT * FROM roles_roles
-                                                    WHERE guild_id = '${guild.id}' AND name = '${document._id}'`)).results;
-                        
-                        if(results.length <= 0) {
-                            await query(`INSERT INTO roles_roles (guild_id, name, role_id)
-                                         VALUES ('${guild.id}', '${document._id}', '${document.rid}')`);
-                        }
-                    }
-                }).catch(logger.error);
-            }).catch(logger.error);
         }).catch(logger.error);
     }
 

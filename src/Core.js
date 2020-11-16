@@ -20,7 +20,6 @@
  * @property {Discord.Collection<typeof Module, Module>} modules
  * @property {Discord.Collection<string, Discord.Collection<string, Discord.Snowflake>>} roles
  * @property {Locale} locale
- * @property {MongoWrapper} tdb
  * @property {SQLWrapper} sql
  */
 
@@ -28,7 +27,6 @@
 /**
  * @typedef {object} Entry
  * @property {Locale} locale
- * @property {MongoWrapper} tdb
  * @property {SQLWrapper} sql
  * @property {(guildId: Discord.Snowflake, name: string) => Discord.Snowflake | null} getRoleId
  */
@@ -50,7 +48,6 @@ import { checkCommand } from './Core/check-command.js';
 import { Locale } from './structures/Locale.js';
 import { Message } from './structures/Message.js';
 import { Module } from './structures/Module.js';
-import { MongoWrapper } from './structures/MongoWrapper.js';
 import { SQLWrapper } from './structures/SQLWrapper.js';
 import { Util } from './structures/Util.js';
 
@@ -263,7 +260,6 @@ async function init() {
             logger.info("Loading strings...");
             return await getLocale();
         })(),
-        tdb: new MongoWrapper(),
         sql: new SQLWrapper(auth.sql),
     }
     this.data = data;
@@ -287,10 +283,6 @@ async function init() {
         logger.info(`Logged in as: ${client.user.username} - (${client.user.id})`);
         this.firstConnect = false;
         
-        await data.tdb.createDatabase(null);
-        for(const guild of client.guilds.cache.values())
-            await data.tdb.createDatabase(guild);
-
         await data.sql.init();
 
         const entry = getEntry(data);

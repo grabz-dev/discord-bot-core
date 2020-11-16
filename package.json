@@ -7,7 +7,6 @@
   "type": "module",
   "dependencies": {
     "discord.js": "^12.4.1",
-    "tingodb": "github:sergeyksv/tingodb#master",
     "mysql": "^2.17.1",
     "node-graceful-shutdown": "^1.0.3",
     "winston": "^3.3.3"

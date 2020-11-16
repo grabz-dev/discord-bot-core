@@ -14,17 +14,7 @@ import { Message } from '../structures/Message.js';
  */
 export function initModuleEvents() {
     const client = this.data.client;
-    const tdb = this.data.tdb;
     const modules = this.data.modules;
-
-    client.on('guildCreate', guild => {
-        tdb.createDatabase(guild).then(() => {
-            for(const key of modules.keys()) {
-                const module = /** @type {Module} */ (modules.get(key));
-                if(typeof module.init === 'function') module.init(guild);
-            }
-        }).catch(logger.error);
-    });
 
     client.on('message', async message => { //check each message to see if it's a command
         if(message.author.bot) return;

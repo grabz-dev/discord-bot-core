@@ -13,7 +13,6 @@ export function getEntry(data) {
     /** @type {Core.Entry} */
     const entry = Object.freeze({
         locale: data.locale,
-        tdb: data.tdb,
         sql: data.sql,
         /**
          * 
