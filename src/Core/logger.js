@@ -36,6 +36,6 @@ export const logger = winston.createLogger({
         if(typeof message === 'object')
             return oldError('', message);
         else
-            return oldError(arguments);
+            return oldError(message);
     }
 }
