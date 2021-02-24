@@ -83,6 +83,7 @@ function searchModule(entry, path) {
             if(err) throw err.message;
 
             for(let file of files) {
+                if(file.indexOf('.') < 0) continue;
                 // @ts-ignore
                 /** @type {Module} */ let module = (await import(path + '/' + file)).default;
                 // @ts-ignore
