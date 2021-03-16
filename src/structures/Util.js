@@ -80,7 +80,7 @@ export const Util = Object.freeze({
     /**
      * Given a `path`, this function will create a new directory. Will not do anything if the directory already exists.
      * @param {*} path - The path to the new directory.
-     * @returns {Promise<null>}
+     * @returns {Promise<void>}
      */
     createDirectory : function(path) {
         return new Promise((resolve, reject) => {

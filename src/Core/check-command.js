@@ -151,6 +151,6 @@ export function checkCommand(m) {
     //If the command callback returns a string, display an error.
     let errStr = command.callback(m, args, str, {});
     if(typeof errStr === "string")
-        m.channel.send('', {embed: getCommandHelpEmbed.bind(this)(m.member, "error", this.data.locale, command, errStr) || undefined });
+        m.channel.send('', {embed: getCommandHelpEmbed.bind(this)(m.member, "error", this.data.locale, command, errStr) || undefined }).then(message => message.delete({ timeout: 1000 * 60 }));
     return true;
 }
