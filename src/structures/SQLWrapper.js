@@ -12,10 +12,10 @@ import { Util } from './Util.js';
 /**
  * 
  * @param {{user: string, password: string}} account 
+ * @param {string} dbName
  */
-export function SQLWrapper(account) {
+export function SQLWrapper(account, dbName) {
     const host = 'localhost';
-    const dbName = 'lia_bot';
 
     var created = false;
     var online = false;

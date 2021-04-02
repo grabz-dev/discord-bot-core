@@ -59,11 +59,13 @@ export class Core extends EventEmitter {
     /**
      * 
      * @param {Discord.Snowflake|null} overrideMemberId 
+     * @param {string} dbName
      */
-    constructor(overrideMemberId) {
+    constructor(overrideMemberId, dbName) {
         super();
 
         this.overrideMemberId = overrideMemberId;
+        this.dbName = dbName;
 
         if(instance != null) return instance;
         instance = this;
@@ -77,7 +79,7 @@ export class Core extends EventEmitter {
         /** @type {Discord.Client} */
         this.client;
         
-        init.bind(this)();
+        init.bind(this)(dbName);
     }
 
     /**
@@ -243,8 +245,9 @@ export class Core extends EventEmitter {
 
 /**
  * @this {Core}
+ * @param {string} dbName
  */
-async function init() {
+async function init(dbName) {
     logger.info('Looking for auth.json...');
     const auth = await authenticate();
     const client = new Discord.Client({
@@ -265,7 +268,7 @@ async function init() {
             logger.info("Loading strings...");
             return await getLocale();
         })(),
-        sql: new SQLWrapper(auth.sql),
+        sql: new SQLWrapper(auth.sql, dbName),
     }
     this.data = data;
     
