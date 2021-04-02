@@ -10,7 +10,7 @@ import { Locale } from '../structures/Locale.js';
  */
 export function getLocale() {
     return new Promise((resolve, reject) => {
-        fs.readFile(`${process.env.PWD}/src/locale/english.json`, (err, core) => {
+        fs.readFile(`${process.cwd()}/src/locale/english.json`, (err, core) => {
             if(err) throw err.message;
             fs.readFile('src/locale/english.json', (err, user) => {
                 if(err) throw err.message;

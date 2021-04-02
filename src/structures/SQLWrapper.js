@@ -79,7 +79,8 @@ export function SQLWrapper(account) {
 
     /**
      * 
-     * @param {(query: (s: string) => Promise<{results: any, fields: MySQL.FieldInfo[] | undefined}>) => Promise<void>} callback
+     * @param {(query: (s: string) => Promise<{results: any, fields: MySQL.FieldInfo[] | undefined}>) => Promise<any>} callback
+     * @returns {Promise<any>}
      */
     this.transaction = async function(callback) {
         if(!pool || !online) throw 'MySQL database is offline';
@@ -89,8 +90,9 @@ export function SQLWrapper(account) {
 
         try {
             await util.promisify(connection.beginTransaction).bind(connection)();
-            await callback( async options => await query(connection, options) );
+            const ret = await callback( async options => await query(connection, options) );
             await util.promisify(connection.commit).bind(connection)();
+            return ret;
         } catch(e) {
             logger.error(e);
             await util.promisify(connection.rollback).bind(connection)();

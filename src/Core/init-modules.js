@@ -9,13 +9,18 @@ import { logger } from '../Core.js';
 import Discord from 'discord.js';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { Util } from '../structures/Util.js';
 
 import Roles from '../modules/Roles.js';
 
 //https://techsparx.com/nodejs/esnext/dirname-es-modules.html
 // @ts-ignore
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const __dirname = (() => {
+    let str = path.dirname(new URL(import.meta.url).pathname);
+    if(str[0] === '/' && os.platform() === 'win32') str = str.substring(1);
+    return str;
+})();
 
 /**
  * 
@@ -48,7 +53,7 @@ export async function initModules(entry) {
     });
 
     logger.info('Searching custom modules...');
-    await searchModule.bind(this)(entry, process.env.PWD + '/src/modules');
+    await searchModule.bind(this)(entry, process.cwd() + '/src/modules');
 
     {
         let guildsArr = this.data.client.guilds.cache.array();
@@ -85,7 +90,7 @@ function searchModule(entry, path) {
             for(let file of files) {
                 if(file.indexOf('.') < 0) continue;
                 // @ts-ignore
-                /** @type {Module} */ let module = (await import(path + '/' + file)).default;
+                /** @type {Module} */ let module = (await import(`file://${path}/${file}`)).default;
                 // @ts-ignore
                 this.addModule(new module(entry));
             }

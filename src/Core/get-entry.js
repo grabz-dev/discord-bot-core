@@ -12,6 +12,7 @@ import Discord from 'discord.js';
 export function getEntry(data) {
     /** @type {Core.Entry} */
     const entry = Object.freeze({
+        client: data.client,
         locale: data.locale,
         sql: data.sql,
         /**

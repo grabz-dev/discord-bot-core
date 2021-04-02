@@ -26,6 +26,7 @@
 
 /**
  * @typedef {object} Entry
+ * @property {Discord.Client} client
  * @property {Locale} locale
  * @property {SQLWrapper} sql
  * @property {(guildId: Discord.Snowflake, name: string) => Discord.Snowflake | null} getRoleId
