@@ -94,7 +94,6 @@ export function SQLWrapper(account, dbName) {
             await util.promisify(connection.commit).bind(connection)();
             return ret;
         } catch(e) {
-            logger.error(e);
             await util.promisify(connection.rollback).bind(connection)();
             throw e;
         } finally {
