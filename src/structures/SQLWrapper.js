@@ -7,7 +7,7 @@ import { onShutdown } from 'node-graceful-shutdown';
 import { logger } from '../Core.js';
 import { Util } from './Util.js';
 
-/** @typedef {(s: string) => Promise<{results: any, fields: MySQL.FieldInfo[] | undefined}>} Query */
+/** @typedef {(s: string, values?: any) => Promise<{results: any, fields: MySQL.FieldInfo[] | undefined}>} Query */
 
 /**
  * 
@@ -79,7 +79,7 @@ export function SQLWrapper(account, dbName) {
 
     /**
      * @template T
-     * @param {(query: Query) => Promise<T>} callback 
+     * @param {(query: Query, mysql: MySQL) => Promise<T>} callback 
      * @returns {Promise<T>} 
      */
     this.transaction = async function(callback) {
@@ -90,7 +90,7 @@ export function SQLWrapper(account, dbName) {
 
         try {
             await util.promisify(connection.beginTransaction).bind(connection)();
-            const ret = await callback( async options => await query(connection, options) );
+            const ret = await callback( async (options, values) => await query(connection, options, values), MySQL );
             await util.promisify(connection.commit).bind(connection)();
             return ret;
         } catch(e) {
@@ -106,12 +106,13 @@ export function SQLWrapper(account, dbName) {
 /**
  * @param {MySQL.Connection|MySQL.PoolConnection} connection
  * @param {string} options 
+ * @param {any=} values
  * @returns {Promise<{results: any, fields: MySQL.FieldInfo[] | undefined}>}
  */
-async function query(connection, options) {
+async function query(connection, options, values) {
     options = options.replace(/\s\s+/g, ' ');
     return new Promise((resolve, reject) => {
-        connection.query(options, (error, results, fields) => {
+        connection.query(options, values, (error, results, fields) => {
             if(error) {
                 reject(error);
                 return;
