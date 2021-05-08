@@ -55,7 +55,8 @@ export function SQLWrapper(account, dbName) {
             host     : host,
             user     : account.user,
             password : account.password,
-            database : 'mysql'
+            database : 'mysql',
+            charset  : 'utf8mb4'
         });
         await util.promisify(connection.connect).bind(connection)();
         await query(connection, `CREATE DATABASE IF NOT EXISTS ${dbName}`);
@@ -69,6 +70,7 @@ export function SQLWrapper(account, dbName) {
             password        : account.password,
             database        : dbName,
             multipleStatements: true,
+            charset  : 'utf8mb4'
         }); 
 
         //See if pool accepts connections
