@@ -283,5 +283,15 @@ export const Util = Object.freeze({
         for(let i = 0; i < count; i++)
             ret += str;
         return ret;
+    },
+    /**
+     * Add ordinal to a number (e.g. 1 => 1st, 4 => 4th)
+     * @param {number} n 
+     * @returns {string}
+     */
+    getNumberWithOrdinal : function(n) {
+        let s = ["th", "st", "nd", "rd"];
+        let v = n % 100;
+        return n + (s[(v - 20) % 10] || s[v] || s[0]);
     }
 });
