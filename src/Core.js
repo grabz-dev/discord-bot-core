@@ -127,7 +127,8 @@ export class Core extends EventEmitter {
     /**
      * @template {typeof Module} T
      * @param {T} base
-     * @returns {Promise<T[keyof T]>}
+     * @returns {Promise<any>}
+     * returns {Promise<T[keyof T]>}
      */
     getModule(base) {
         return new Promise((resolve, reject) => {
