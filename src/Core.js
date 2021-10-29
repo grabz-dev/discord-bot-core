@@ -103,7 +103,7 @@ export class Core extends EventEmitter {
             try { func(guild) } catch(e) { console.error(e) }
 
             // @ts-ignore
-            this.data.client.setInterval(guild => {
+            setInterval(guild => {
                 try { func(guild) } catch(e) { console.error(e) }
             }, milliseconds, guild);
         }
