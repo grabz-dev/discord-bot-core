@@ -40,7 +40,8 @@ export function checkCommand(m) {
         categoryName = categoryName.trim();
         let category = commandsByCategory.get(categoryName);
         if(category && (helpCommand && this.canUseCommand(m.member, helpCommand))) {
-            m.channel.send('', { embed: getCategoryHelpEmbed.bind(this)(m.member, this.data.locale, category) || undefined }).catch(logger.error);
+            let embed = getCategoryHelpEmbed.bind(this)(m.member, this.data.locale, category);
+            if(embed) m.channel.send({ embeds: [embed] }).catch(logger.error);
 
             return true;
         }
@@ -127,7 +128,7 @@ export function checkCommand(m) {
             if(!r) return null;
             return r.get(id) || null;
         }));
-        m.channel.send('', { embed: embed }).catch(logger.error);
+        m.channel.send({ embeds: [embed] }).catch(logger.error);
         
         return false;
     }
@@ -143,14 +144,18 @@ export function checkCommand(m) {
 
     if(isHelp) {
         const embed = getCommandHelpEmbed.bind(this)(m.member, "help", this.data.locale, command, "");
-        if(embed) m.channel.send('', { embed: embed }).catch(logger.error);
+        if(embed) m.channel.send({ embeds: [embed] }).catch(logger.error);
         return true;
     }
 
     //Execute the command.
     //If the command callback returns a string, display an error.
     let errStr = command.callback(m, args, str, {});
-    if(typeof errStr === "string")
-        m.channel.send('', {embed: getCommandHelpEmbed.bind(this)(m.member, "error", this.data.locale, command, errStr) || undefined }).then(message => message.delete({ timeout: 1000 * 60 }));
+    if(typeof errStr === "string") {
+        let embed = getCommandHelpEmbed.bind(this)(m.member, "error", this.data.locale, command, errStr);
+        if(embed) m.channel.send({ embeds: [embed] }).then(message => 
+            setTimeout(() => message.delete().catch(logger.error), 1000 * 60)
+        );
+    }
     return true;
 }

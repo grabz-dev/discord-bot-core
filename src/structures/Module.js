@@ -112,7 +112,7 @@ export class Module extends EventEmitter {
 
     /**
      * Emitted whenever a reaction is added to a cached message.
-     * @param {Discord.MessageReaction} messageReaction 
+     * @param {Discord.MessageReaction | Discord.PartialMessageReaction} messageReaction 
      * @param {Discord.User|Discord.PartialUser} user 
      */
     onMessageReactionAdd(messageReaction, user) {}

@@ -127,7 +127,7 @@ export class Core extends EventEmitter {
     /**
      * @template {typeof Module} T
      * @param {T} base
-     * @returns {Promise<any>} //TODO
+     * @returns {Promise<T[keyof T]>}
      */
     getModule(base) {
         return new Promise((resolve, reject) => {
@@ -137,6 +137,7 @@ export class Core extends EventEmitter {
                 return;
             }
 
+            // @ts-ignore
             resolve(module);
         });
     }
@@ -252,6 +253,7 @@ async function init(dbName) {
     const auth = await authenticate();
     const client = new Discord.Client({
         partials: ['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE', 'REACTION'],
+        intents: [Discord.Intents.FLAGS.GUILDS]
     });
     this.client = client;
 
@@ -369,6 +371,6 @@ function displayHelp(bm, args, arg, ext) {
             }
         }
 
-        bm.channel.send('', { embed:embed });
+        bm.channel.send({ embeds: [embed] });
     })().catch(console.error);
 }
