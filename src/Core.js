@@ -60,8 +60,9 @@ export class Core extends EventEmitter {
      * 
      * @param {Discord.Snowflake|null} overrideMemberId 
      * @param {string} dbName
+     * @param {number[]} intents
      */
-    constructor(overrideMemberId, dbName) {
+    constructor(overrideMemberId, dbName, intents) {
         super();
 
         this.overrideMemberId = overrideMemberId;
@@ -78,6 +79,8 @@ export class Core extends EventEmitter {
         this.checkCommand = checkCommand;
         /** @type {Discord.Client} */
         this.client;
+        /** @type {number[]} */
+        this.intents = intents;
         
         init.bind(this)(dbName);
     }
@@ -254,7 +257,7 @@ async function init(dbName) {
     const auth = await authenticate();
     const client = new Discord.Client({
         partials: ['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE', 'REACTION'],
-        intents: [Discord.Intents.FLAGS.GUILDS]
+        intents: this.intents
     });
     this.client = client;
 
