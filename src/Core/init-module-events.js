@@ -16,7 +16,7 @@ export function initModuleEvents() {
     const client = this.data.client;
     const modules = this.data.modules;
 
-    client.on('message', async message => { //check each message to see if it's a command
+    client.on('messageCreate', async message => { //check each message to see if it's a command
         if(message.author.bot) return;
         if(message.type !== 'DEFAULT') return;
         
