@@ -56,8 +56,8 @@ export async function initModules(entry) {
     await searchModule.bind(this)(entry, process.cwd() + '/src/modules');
 
     {
-        let guildsArr = this.data.client.guilds.cache.array();
-        let keys = this.data.modules.keyArray();
+        let guildsArr = Array.from(this.data.client.guilds.cache.values());
+        let keys = Array.from(this.data.modules.keys());
 
         for(let j = 0; j < guildsArr.length; j++) {
             let str = '[' + guildsArr[j].name + '] %0 modules OK: ';

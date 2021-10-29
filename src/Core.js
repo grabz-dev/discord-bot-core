@@ -60,8 +60,9 @@ export class Core extends EventEmitter {
      * 
      * @param {Discord.Snowflake|null} overrideMemberId 
      * @param {string} dbName
+     * @param {number[]} intents
      */
-    constructor(overrideMemberId, dbName) {
+    constructor(overrideMemberId, dbName, intents) {
         super();
 
         this.overrideMemberId = overrideMemberId;
@@ -78,6 +79,8 @@ export class Core extends EventEmitter {
         this.checkCommand = checkCommand;
         /** @type {Discord.Client} */
         this.client;
+        /** @type {number[]} */
+        this.intents = intents;
         
         init.bind(this)(dbName);
     }
@@ -103,7 +106,7 @@ export class Core extends EventEmitter {
             try { func(guild) } catch(e) { console.error(e) }
 
             // @ts-ignore
-            this.data.client.setInterval(guild => {
+            setInterval(guild => {
                 try { func(guild) } catch(e) { console.error(e) }
             }, milliseconds, guild);
         }
@@ -127,7 +130,8 @@ export class Core extends EventEmitter {
     /**
      * @template {typeof Module} T
      * @param {T} base
-     * @returns {Promise<any>} //TODO
+     * @returns {Promise<any>}
+     * returns {Promise<T[keyof T]>}
      */
     getModule(base) {
         return new Promise((resolve, reject) => {
@@ -137,6 +141,7 @@ export class Core extends EventEmitter {
                 return;
             }
 
+            // @ts-ignore
             resolve(module);
         });
     }
@@ -252,6 +257,7 @@ async function init(dbName) {
     const auth = await authenticate();
     const client = new Discord.Client({
         partials: ['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE', 'REACTION'],
+        intents: this.intents
     });
     this.client = client;
 
@@ -369,6 +375,6 @@ function displayHelp(bm, args, arg, ext) {
             }
         }
 
-        bm.channel.send('', { embed:embed });
+        bm.channel.send({ embeds: [embed] });
     })().catch(console.error);
 }
