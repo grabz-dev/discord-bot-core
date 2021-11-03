@@ -18,7 +18,7 @@ export function initModuleEvents() {
 
     client.on('messageCreate', async message => { //check each message to see if it's a command
         if(message.author.bot) return;
-        if(message.type !== 'DEFAULT') return;
+        if(message.type !== 'DEFAULT' && message.type !== 'REPLY') return;
         
         if(message.channel instanceof Discord.DMChannel) {
             try {
