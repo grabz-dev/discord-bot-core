@@ -57,16 +57,20 @@ import Roles from './modules/Roles.js';
 export { logger };
 export class Core extends EventEmitter {
     /**
-     * 
-     * @param {Discord.Snowflake|null} overrideMemberId 
-     * @param {string} dbName
-     * @param {number[]} intents
+     * @param {object} opts
+     * @param {Discord.Snowflake=} opts.overrideMemberId 
+     * @param {string} opts.dbName
+     * @param {number[]} opts.intents
+     * @param {Discord.Snowflake=} opts.errorGuildId
+     * @param {Discord.Snowflake=} opts.errorChannelId
      */
-    constructor(overrideMemberId, dbName, intents) {
+    constructor(opts) {
         super();
 
-        this.overrideMemberId = overrideMemberId;
-        this.dbName = dbName;
+        this.overrideMemberId = opts.overrideMemberId??null;
+        this.dbName = opts.dbName;
+        this.errorChannelId = opts.errorChannelId??null;
+        this.errorGuildId = opts.errorGuildId??null;
 
         if(instance != null) return instance;
         instance = this;
@@ -80,9 +84,27 @@ export class Core extends EventEmitter {
         /** @type {Discord.Client} */
         this.client;
         /** @type {number[]} */
-        this.intents = intents;
+        this.intents = opts.intents;
+
+        (() => {
+            let _error = logger.error;
+            /**
+             * 
+             * @param {any} message 
+             */
+            logger.error = message => {
+                if(this.client && this.errorGuildId != null && this.errorChannelId != null) {
+                    this.client.guilds.fetch(this.errorGuildId).then(async guild => {
+                        return await guild.channels.fetch(this.errorChannelId??"");
+                    }).then(async channel => {
+                        if(channel instanceof Discord.TextChannel) await channel.send(JSON.stringify(message));
+                    }).catch(console.error);
+                }
+                return _error(message);
+            }
+        })();
         
-        init.bind(this)(dbName);
+        init.bind(this)(opts.dbName);
     }
 
     /**
