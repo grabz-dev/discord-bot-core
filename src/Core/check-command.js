@@ -13,6 +13,8 @@ import { getCategoryHelpEmbed, getCommandDeniedEmbed, getCommandHelpEmbed } from
  * @returns {boolean} true if success, false if failure
  */
 export function checkCommand(m) {
+    if(this.blacklist.includes(m.member.id)) return false;
+
     const commandsByName = this.data.commands.name;
     const commandsByCategory = this.data.commands.category;
 

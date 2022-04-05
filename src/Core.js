@@ -53,6 +53,7 @@ import { SQLWrapper } from './structures/SQLWrapper.js';
 import { Util } from './structures/Util.js';
 
 import Roles from './modules/Roles.js';
+import Blacklist from './modules/Blacklist.js';
 
 export { logger };
 export class Core extends EventEmitter {
@@ -85,6 +86,8 @@ export class Core extends EventEmitter {
         this.client;
         /** @type {number[]} */
         this.intents = opts.intents;
+        /** @type {Array<Discord.Snowflake>} */
+        this.blacklist = [];
 
         (() => {
             let _error = logger.error;
@@ -326,22 +329,21 @@ async function init(dbName) {
         initModuleEvents.bind(this)();
 
         this.removeAllCommands();
-        this.addCommand({
-            baseNames: 'role',
-            commandNames: '',
-            categoryNames: [':diamond_shape_with_a_dot_inside: Core', 'core'],
-            authorityLevel: null
-        }, (message, args, arg) => {
+        const categoryNames = [':diamond_shape_with_a_dot_inside: Core', 'core'];
+        this.addCommand({ baseNames: 'role', commandNames: '', categoryNames, authorityLevel: null }, (message, args, arg) => {
             // @ts-ignore
             return /** @type {BotModule} */ this.data.modules.get(Roles)["role"](message, args, arg, {});
         });
 
-        this.addCommand({
-            baseNames: 'help',
-            commandNames: '',
-            categoryNames: [':game_die: Miscellaneous', 'miscellaneous', 'misc'],
-            authorityLevel: 'EVERYONE'
-        }, displayHelp.bind(this));
+        this.addCommand({ baseNames: 'help', commandNames: '', categoryNames, authorityLevel: 'EVERYONE' }, displayHelp.bind(this));
+        this.addCommand({baseNames: 'blacklist', commandNames: 'add', categoryNames, authorityLevel: 'MODERATOR'}, (message, args, arg) => {
+            // @ts-ignore
+            return /** @type {BotModule} */ this.data.modules.get(Blacklist)["land"](message, args, arg, { action: 'add' });
+        });
+        this.addCommand({baseNames: 'blacklist', commandNames: 'remove', categoryNames, authorityLevel: 'MODERATOR'}, (message, args, arg) => {
+            // @ts-ignore
+            return /** @type {BotModule} */ this.data.modules.get(Blacklist)["land"](message, args, arg, { action: 'remove' });
+        });
 
         this.emit("ready", entry);
     });

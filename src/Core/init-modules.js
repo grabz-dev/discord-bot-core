@@ -13,6 +13,7 @@ import os from 'os';
 import { Util } from '../structures/Util.js';
 
 import Roles from '../modules/Roles.js';
+import Blacklist from '../modules/Blacklist.js';
 
 //https://techsparx.com/nodejs/esnext/dirname-es-modules.html
 // @ts-ignore
@@ -51,6 +52,12 @@ export async function initModules(entry) {
                 roleStrings.set(result.name, result.role_id);
         });
     });
+
+    let blacklist = /** @type {Blacklist | undefined} */(this.data.modules.get(Blacklist));
+    if(!blacklist) throw 'Required core module Blacklist not found.';
+    blacklist.on('blacklistChanged', results => {
+        this.blacklist = results.map(v => v.user_id);
+    })
 
     logger.info('Searching custom modules...');
     await searchModule.bind(this)(entry, process.cwd() + '/src/modules');
