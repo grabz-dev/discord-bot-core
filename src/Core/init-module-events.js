@@ -150,4 +150,16 @@ export function initModuleEvents() {
             console.error(e);
         }
     });
+
+    client.on('presenceUpdate', (oldPresence, newPresence) => {
+        if(!newPresence.user || newPresence.user.bot) return;
+        try {
+            for(const key of modules.keys()) {
+                const module = /** @type {Module} */ (modules.get(key));
+                if(typeof module.onPresenceUpdate === 'function') module.onPresenceUpdate(oldPresence??null, newPresence);
+            }
+        } catch(e) {
+            console.error(e);
+        }
+    });
 }

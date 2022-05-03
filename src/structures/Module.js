@@ -116,4 +116,11 @@ export class Module extends EventEmitter {
      * @param {Discord.User|Discord.PartialUser} user 
      */
     onMessageReactionAdd(messageReaction, user) {}
+
+    /**
+     * Emitted whenever a reaction is added to a cached message.
+     * @param {Discord.Presence|null} oldPresence 
+     * @param {Discord.Presence} newPresence 
+     */
+    onPresenceUpdate(oldPresence, newPresence) {}
 }
