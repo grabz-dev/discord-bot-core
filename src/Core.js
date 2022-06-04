@@ -21,6 +21,7 @@
  * @property {Discord.Collection<string, Discord.Collection<string, Discord.Snowflake>>} roles
  * @property {Locale} locale
  * @property {SQLWrapper} sql
+ * @property {string} token
  */
 
 
@@ -30,6 +31,7 @@
  * @property {Locale} locale
  * @property {SQLWrapper} sql
  * @property {(guildId: Discord.Snowflake, name: string) => Discord.Snowflake | null} getRoleId
+ * @property {string} token
  */
 
 /** @type {Core | null} */
@@ -300,6 +302,7 @@ async function init(dbName) {
             return await getLocale();
         })(),
         sql: new SQLWrapper(auth.sql, dbName),
+        token: auth.token
     }
     this.data = data;
     

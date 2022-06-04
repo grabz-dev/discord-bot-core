@@ -15,6 +15,7 @@ export function getEntry(data) {
         client: data.client,
         locale: data.locale,
         sql: data.sql,
+        token: data.token,
         /**
          * 
          * @param {Discord.Snowflake} guildId 
