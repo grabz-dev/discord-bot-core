@@ -1,12 +1,14 @@
 {
   "name": "@grabz-dev/discord-bot-core",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "description": "",
   "main": "bot.js",
   "author": "Grabz#4707",
   "type": "module",
   "dependencies": {
+    "@discordjs/rest": "^0.4.1",
     "discord.js": "^13.7.0",
+    "discord-api-types": "^0.33.2",
     "mysql": "^2.17.1",
     "node-graceful-shutdown": "^1.0.3",
     "winston": "^3.3.3"
