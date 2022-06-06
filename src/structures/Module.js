@@ -11,6 +11,7 @@
 
 import Discord from 'discord.js';
 import { EventEmitter } from 'events';
+import { BotCache } from './Cache.js';
 import { Util } from './Util.js';
 
 /** Module for use with the bot. Class primarily exists for being extended from. */
@@ -33,38 +34,7 @@ export class Module extends EventEmitter {
         super();
 
         this.bot = bot;
-
-        const _cache = new Discord.Collection();
-        this.cache = {
-            /**
-             * @param {Discord.Snowflake} guildId - The ID of the guild the cache is saved on.
-             * @param {string} propertyName - The name of the property to retrieve.
-             * @returns {any} The retrieved item
-             */
-            get: function(guildId, propertyName) {
-                let item = _cache.get(guildId);
-                if(!item)
-                    return undefined;
-
-                return item[propertyName];
-            },
-            /**
-             * @param {Discord.Snowflake} guildId - The ID of the guild the cache is saved on.
-             * @param {string} propertyName - The name of the property to retrieve.
-             * @param {any} value - The value to set on the cache.
-             */
-            set: function(guildId, propertyName, value) {
-                let item = _cache.get(guildId);
-                if(!item)
-                    _cache.set(guildId, {[propertyName]: value})
-                else {
-                    item[propertyName] = value;
-                    _cache.set(guildId, item);
-                }
-            }
-        }
-
-        Object.freeze(this.cache);
+        this.cache = new BotCache();
     }
 
     /**

@@ -22,6 +22,7 @@
  * @property {Locale} locale
  * @property {SQLWrapper} sql
  * @property {string} token
+ * @property {BotCache} cache
  * @property {Discord.Snowflake} fullAuthorityOverride
  */
 
@@ -33,6 +34,7 @@
  * @property {SQLWrapper} sql
  * @property {(guildId: Discord.Snowflake, name: string) => Discord.Snowflake | null} getRoleId
  * @property {string} token
+ * @property {BotCache} cache
  * @property {Discord.Snowflake} fullAuthorityOverride
  */
 
@@ -55,6 +57,7 @@ import { Message } from './structures/Message.js';
 import { Module } from './structures/Module.js';
 import { SQLWrapper } from './structures/SQLWrapper.js';
 import { Util } from './structures/Util.js';
+import { BotCache } from './structures/Cache.js';
 
 import Roles from './modules/Roles.js';
 import Blacklist from './modules/Blacklist.js';
@@ -303,6 +306,7 @@ async function init(dbName) {
         })(),
         sql: new SQLWrapper(auth.sql, dbName),
         token: auth.token,
+        cache: new BotCache(),
         fullAuthorityOverride: auth.full_authority
     }
     this.data = data;
