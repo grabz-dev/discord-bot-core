@@ -22,6 +22,7 @@
  * @property {Locale} locale
  * @property {SQLWrapper} sql
  * @property {string} token
+ * @property {Discord.Snowflake} fullAuthorityOverride
  */
 
 
@@ -32,6 +33,7 @@
  * @property {SQLWrapper} sql
  * @property {(guildId: Discord.Snowflake, name: string) => Discord.Snowflake | null} getRoleId
  * @property {string} token
+ * @property {Discord.Snowflake} fullAuthorityOverride
  */
 
 /** @type {Core | null} */
@@ -302,7 +304,8 @@ async function init(dbName) {
             return await getLocale();
         })(),
         sql: new SQLWrapper(auth.sql, dbName),
-        token: auth.token
+        token: auth.token,
+        fullAuthorityOverride: auth.full_authority
     }
     this.data = data;
     

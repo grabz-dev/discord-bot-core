@@ -5,7 +5,7 @@ import fs from 'fs';
 /**
  * 
  * @throws ENOENT
- * @returns {Promise<{token: string, sql: { user: string, password: string }}>}
+ * @returns {Promise<{token: string, sql: { user: string, password: string }, full_authority: string}>}
  */
 export function authenticate() {
     return new Promise((resolve, reject) => {
