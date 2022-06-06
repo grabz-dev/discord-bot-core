@@ -63,7 +63,6 @@ export { logger };
 export class Core extends EventEmitter {
     /**
      * @param {object} opts
-     * @param {Discord.Snowflake=} opts.overrideMemberId 
      * @param {string} opts.dbName
      * @param {number[]} opts.intents
      * @param {Discord.Snowflake=} opts.errorGuildId
@@ -72,7 +71,6 @@ export class Core extends EventEmitter {
     constructor(opts) {
         super();
 
-        this.overrideMemberId = opts.overrideMemberId??null;
         this.dbName = opts.dbName;
         this.errorChannelId = opts.errorChannelId??null;
         this.errorGuildId = opts.errorGuildId??null;
@@ -205,7 +203,7 @@ export class Core extends EventEmitter {
         if(Util.isMemberAdmin(member) || command.authorityLevel.includes("EVERYONE"))
             return true;
 
-        if(this.overrideMemberId != null && member.id === this.overrideMemberId)
+        if(this.data.fullAuthorityOverride != null && member.id === this.data.fullAuthorityOverride)
             return true;
 
         //If no role definitions have been added to this guild, no point checking.
