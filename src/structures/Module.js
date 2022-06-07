@@ -44,6 +44,25 @@ export class Module extends EventEmitter {
     init(guild) {}
 
     /**
+     * Return true if the incoming interaction is allowed, false otherwise.
+     * @param {Discord.CommandInteraction<"cached">} interaction 
+     * @param {Discord.Guild} guild
+     * @param {Discord.GuildMember} member
+     * @returns {boolean}
+     */
+    interactionPermitted(interaction, guild, member) { return false; }
+
+    /**
+     * Handle incoming interaction.
+     * @param {Discord.CommandInteraction<"cached">} interaction 
+     * @param {Discord.Guild} guild
+     * @param {Discord.GuildMember} member
+     * @param {Discord.TextChannel | Discord.ThreadChannel} channel
+     * @param {any} data 
+     */
+    async incomingInteraction(interaction, guild, member, channel, data) {}
+
+    /**
      * Called when a message is sent.
      * @param {Discord.Message} message - The message that was sent.
      */

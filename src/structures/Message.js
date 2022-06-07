@@ -8,7 +8,7 @@ export class Message {
      * @param {Discord.Message} message 
      * @param {Discord.GuildMember} member 
      * @param {Discord.Guild} guild 
-     * @param {Discord.PartialDMChannel | Discord.TextChannel | Discord.ThreadChannel} channel
+     * @param {Discord.PartialDMChannel | Discord.TextChannel | Discord.ThreadChannel | Discord.VoiceChannel} channel
      */
     constructor(message, member, guild, channel) {
         this.message = message;
