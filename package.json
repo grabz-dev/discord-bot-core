@@ -1,6 +1,6 @@
 {
   "name": "@grabz-dev/discord-bot-core",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "",
   "main": "bot.js",
   "author": "Grabz#4707",

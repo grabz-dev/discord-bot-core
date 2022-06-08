@@ -342,8 +342,6 @@ async function init(dbName) {
         initModuleEvents.bind(this)();
 
         this.removeAllCommands();
-        const categoryNames = [':diamond_shape_with_a_dot_inside: Core', 'core'];
-        this.addCommand({ baseNames: 'help', commandNames: '', categoryNames, authorityLevel: 'EVERYONE' }, displayHelp.bind(this));
 
         await (async () => {
             if(client.user == null) return;
