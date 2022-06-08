@@ -72,6 +72,9 @@ export async function initModules(entry) {
             for(let i = 0; i < keys.length; i++) {
                 let module = /** @type {Module} */(this.data.modules.get(keys[i]));
                 module.init(guildsArr[j]);
+                for(let commandName of module.commands) {
+                    this.slashCommands[commandName] = module;
+                }
                 oks++;
                 str += module.constructor.name + ' ';
             }

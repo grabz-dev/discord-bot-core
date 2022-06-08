@@ -16,6 +16,34 @@ export function initModuleEvents() {
     const client = this.data.client;
     const modules = this.data.modules;
 
+    client.on('interactionCreate', async interaction => {
+        if(!interaction.isCommand()) return;
+        if(!interaction.inCachedGuild()) return;
+        if(this.blacklist.includes(interaction.member.id)) {
+            logger.info(`Blacklisted user ${interaction.member.nickname??interaction.member.user.username}#${interaction.member.user.discriminator} tried to use /${interaction.commandName}`);
+            await interaction.reply({ content: "You're not allowed to use this command.", ephemeral: true });
+            return;
+        }
+
+        if(interaction.guild == null || 
+            !(interaction.member instanceof Discord.GuildMember) ||
+            !(interaction.channel instanceof Discord.TextChannel || interaction.channel instanceof Discord.ThreadChannel)) {
+            await interaction.reply({ content: 'This interaction is unsupported.' });
+            return;
+        }
+
+        logger.info(`${interaction.member.nickname??interaction.member.user.username}#${interaction.member.user.discriminator} used /${interaction.commandName}`);
+
+        let module = this.slashCommands[interaction.commandName];
+        if(module == null) {
+            logger.error('Command not registered as module.');
+            return;
+        }
+        else {
+            await module._interact(interaction, interaction.channel).catch(logger.error);
+        }
+    });
+
     client.on('messageCreate', async message => { //check each message to see if it's a command
         if(message.author.bot) return;
         if(message.type !== 'DEFAULT' && message.type !== 'REPLY') return;

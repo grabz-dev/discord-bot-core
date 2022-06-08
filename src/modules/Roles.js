@@ -1,10 +1,12 @@
 'use strict';
 
+/** @typedef {import('discord-api-types/rest/v9').RESTPostAPIApplicationCommandsJSONBody} RESTPostAPIApplicationCommandsJSONBody */
 /** @typedef {import('../Core').Entry} Core.Entry */
 /** @typedef {import('../structures/Message').Message} Message */
 
 import { logger } from '../Core.js';
 import Discord from 'discord.js';
+import { SlashCommandBuilder } from '@discordjs/builders';
 import { Module } from '../structures/Module.js';
 import { Util } from '../structures/Util.js';
 
@@ -12,6 +14,7 @@ export default class Roles extends Module {
     /** @param {Core.Entry} bot */
     constructor(bot) {
         super(bot);
+        this.commands = ['role'];
     }
 
     /**
@@ -40,51 +43,92 @@ export default class Roles extends Module {
     }
 
     /**
-     * Module Function: Associate a string with a role ID.
-     * @param {Message} m - Message of the user executing the command.
-     * @param {string[]} args - List of arguments provided by the user delimited by whitespace.
-     * @param {string} arg - The full string written by the user after the command.
-     * @param {object} ext - Custom parameters provided to function call.
-     * @returns {string | void} Nothing if finished correctly, string if an error is thrown.
+     * 
+     * @param {Discord.CommandInteraction<"cached">} interaction 
+     * @param {Discord.Guild} guild
+     * @param {Discord.GuildMember} member
+     * @returns {boolean}
      */
-    role(m, args, arg, ext) {
-        let name = args[0];
-        if(name == null)
-            return this.bot.locale.category('roles', 'err_name_not_provided');
+    interactionPermitted(interaction, guild, member) {
+        return false;
+    }
 
-        if(args[1] == null)
-            return this.bot.locale.category('', 'err_role_mention_not_provided');
+    /**
+     * 
+     * @param {Discord.CommandInteraction<"cached">} interaction 
+     * @param {Discord.Guild} guild
+     * @param {Discord.GuildMember} member
+     * @param {Discord.TextChannel | Discord.ThreadChannel} channel
+     */
+    async incomingInteraction(interaction, guild, member, channel) {
+        const commandName = interaction.commandName;
+        switch(commandName) {
+        case 'role': {
+            let name = interaction.options.getString('name', true);
+            let role = interaction.options.getMentionable('role', true);
 
-        let snowflake = Util.getSnowflakeFromDiscordPing(args[1]);
-        if(snowflake == null)
-            return this.bot.locale.category('', 'err_role_mention_not_correct');
-            
-        let id = snowflake;
+            this.role(interaction, guild, name, role.id);
+            return;
+        }
+        }
+    }
 
+    /**
+     * 
+     * @returns {RESTPostAPIApplicationCommandsJSONBody[]}
+     */
+    getSlashCommands() {
+        return [
+            new SlashCommandBuilder()
+            .setName('role')
+            .setDescription('[Admin] Assign a unique identifier to a role, for use with bot permissions.')
+            .setDefaultMemberPermissions('0')
+            .addStringOption(option =>
+                option.setName('name')
+                    .setDescription('The internal name for the role.')
+                    .setRequired(true)   
+            ).addMentionableOption(option =>
+                option.setName('role')
+                    .setDescription('The role.')
+                    .setRequired(true)
+            ).toJSON()
+        ]
+    }
+
+    /**
+     * 
+     * @param {Discord.CommandInteraction<"cached">} interaction
+     * @param {Discord.Guild} guild
+     * @param {string} name
+     * @param {Discord.Snowflake} roleId
+     */
+    role(interaction, guild, name, roleId) {
         this.bot.sql.transaction(async query => {
-            let role = await m.guild.roles.fetch(id).catch(() => {});
+            await interaction.deferReply();
+
+            let role = await guild.roles.fetch(roleId).catch(() => {});
             if(!role) {
-                m.channel.send(this.bot.locale.category('', 'err_role_not_on_server')).catch(logger.error);
+                await interaction.editReply(this.bot.locale.category('', 'err_role_not_on_server'));
                 return;
             }
 
             /** @type {any[]} */
             let results = (await query(`SELECT name, role_id FROM roles_roles
-                                        WHERE guild_id = '${m.guild.id}' AND name = '${name}'
+                                        WHERE guild_id = '${guild.id}' AND name = '${name}'
                                         FOR UPDATE`)).results;
             
             if(results.length > 0) {
-                await query(`UPDATE roles_roles SET role_id = '${id}'
-                             WHERE guild_id = '${m.guild.id}' AND name = '${name}'`);
+                await query(`UPDATE roles_roles SET role_id = '${roleId}'
+                             WHERE guild_id = '${guild.id}' AND name = '${name}'`);
             }
             else {
                 await query(`INSERT INTO roles_roles (guild_id, name, role_id)
-                             VALUES ('${m.guild.id}', '${name}', '${id}')`);
+                             VALUES ('${guild.id}', '${name}', '${roleId}')`);
             }
 
-            m.channel.send(this.bot.locale.category('roles', 'role_add_success')).catch(logger.error);
+            await interaction.editReply(this.bot.locale.category('roles', 'role_add_success'));
         }).then(() => {
-            this.emit('rolesChanged', m.guild);
+            this.emit('rolesChanged', guild);
         }).catch(logger.error);
     }
 }

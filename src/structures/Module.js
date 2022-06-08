@@ -1,5 +1,6 @@
 'use strict';
 
+/** @typedef {import('discord-api-types/rest/v9').RESTPostAPIApplicationCommandsJSONBody} RESTPostAPIApplicationCommandsJSONBody */
 /** @typedef {import('../Core').Entry} Core.Entry */
 /** @typedef {import('./SQLWrapper')} SQLWrapper */
 
@@ -35,6 +36,9 @@ export class Module extends EventEmitter {
 
         this.bot = bot;
         this.cache = new BotCache();
+
+        /** @type {string[]} */
+        this.commands = [];
     }
 
     /**
@@ -42,6 +46,24 @@ export class Module extends EventEmitter {
      * @param {Discord.Guild} guild - Current guild.
      */
     init(guild) {}
+
+    /**
+     * @param {Discord.CommandInteraction<"cached">} interaction
+     * @param {Discord.TextChannel|Discord.ThreadChannel} channel
+     */
+    async _interact(interaction, channel) {
+        let forcePermit = false;
+        if(Util.isMemberAdmin(interaction.member) || interaction.member.id === this.bot.fullAuthorityOverride) {
+            forcePermit = true;
+        }
+
+        if(!forcePermit && !this.interactionPermitted(interaction, interaction.guild, interaction.member)) {
+            await interaction.reply({ content: 'You are not permitted to use this command.', ephemeral: true });
+            return;
+        }
+        await this.incomingInteraction(interaction, interaction.guild, interaction.member, channel);
+        return;
+    }
 
     /**
      * Return true if the incoming interaction is allowed, false otherwise.
@@ -58,9 +80,13 @@ export class Module extends EventEmitter {
      * @param {Discord.Guild} guild
      * @param {Discord.GuildMember} member
      * @param {Discord.TextChannel | Discord.ThreadChannel} channel
-     * @param {any} data 
      */
-    async incomingInteraction(interaction, guild, member, channel, data) {}
+    async incomingInteraction(interaction, guild, member, channel) {}
+
+    /**
+     * @returns {RESTPostAPIApplicationCommandsJSONBody[]|null}
+     */
+    getSlashCommands() { return null }
 
     /**
      * Called when a message is sent.

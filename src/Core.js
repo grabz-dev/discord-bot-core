@@ -44,6 +44,9 @@ var instance = null;
 import Discord from 'discord.js';
 import { EventEmitter } from 'events';
 
+import { REST } from '@discordjs/rest';
+import { Routes } from 'discord-api-types/v9';
+
 import { authenticate } from './Core/authenticate.js';
 import { logger } from './Core/logger.js';
 import { getLocale } from './Core/get-locale.js';
@@ -93,6 +96,8 @@ export class Core extends EventEmitter {
         this.intents = opts.intents;
         /** @type {Array<Discord.Snowflake>} */
         this.blacklist = [];
+        /** @type {{[commandName: string]: Module}} */
+        this.slashCommands = {};
 
         (() => {
             let _error = logger.error;
@@ -338,20 +343,32 @@ async function init(dbName) {
 
         this.removeAllCommands();
         const categoryNames = [':diamond_shape_with_a_dot_inside: Core', 'core'];
-        this.addCommand({ baseNames: 'role', commandNames: '', categoryNames, authorityLevel: null }, (message, args, arg) => {
-            // @ts-ignore
-            return /** @type {BotModule} */ this.data.modules.get(Roles)["role"](message, args, arg, {});
-        });
-
         this.addCommand({ baseNames: 'help', commandNames: '', categoryNames, authorityLevel: 'EVERYONE' }, displayHelp.bind(this));
-        this.addCommand({baseNames: 'blacklist', commandNames: 'add', categoryNames, authorityLevel: 'MODERATOR'}, (message, args, arg) => {
-            // @ts-ignore
-            return /** @type {BotModule} */ this.data.modules.get(Blacklist)["land"](message, args, arg, { action: 'add' });
-        });
-        this.addCommand({baseNames: 'blacklist', commandNames: 'remove', categoryNames, authorityLevel: 'MODERATOR'}, (message, args, arg) => {
-            // @ts-ignore
-            return /** @type {BotModule} */ this.data.modules.get(Blacklist)["land"](message, args, arg, { action: 'remove' });
-        });
+
+        await (async () => {
+            if(client.user == null) return;
+            const clientId = client.user.id;
+
+            const commands = [];
+            for(const module of this.data.modules.values()) {
+                let slash = module.getSlashCommands();
+                if(slash != null) commands.push(...slash);
+            }
+
+            logger.info('Started refreshing application (/) commands.');
+            const rest = new REST({ version: '9' }).setToken(this.data.token);
+            for(const guild of Array.from(client.guilds.cache.values())) {
+                logger.info(`Refreshing commands for ${guild.name}.`);
+
+                await rest.put(
+                    Routes.applicationGuildCommands(clientId, guild.id),
+                    { body: commands },
+                );
+
+                await Util.Promise.sleep(1000);
+            }
+            logger.info('Successfully reloaded application (/) commands.');
+        })().catch(logger.error);
 
         this.emit("ready", entry);
     });

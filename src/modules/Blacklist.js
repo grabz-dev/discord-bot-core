@@ -1,5 +1,6 @@
 'use strict';
 
+/** @typedef {import('discord-api-types/rest/v9').RESTPostAPIApplicationCommandsJSONBody} RESTPostAPIApplicationCommandsJSONBody */
 /** @typedef {import('../Core').Entry} Core.Entry */
 /** @typedef {import('../structures/Message').Message} Message */
 
@@ -11,6 +12,7 @@
 
 import { logger } from '../Core.js';
 import Discord from 'discord.js';
+import { SlashCommandBuilder } from '@discordjs/builders';
 import { Module } from '../structures/Module.js';
 import { Util } from '../structures/Util.js';
 
@@ -21,6 +23,8 @@ export default class Blacklist extends Module {
      */
     constructor(bot) {
         super(bot);
+        this.commands = ['blacklist'];
+
         this.bot.sql.transaction(async query => {
             await query(`CREATE TABLE IF NOT EXISTS blacklist_users (
                 id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -52,66 +56,102 @@ export default class Blacklist extends Module {
     }
 
     /**
-     * Module Function
-     * @param {Message} m - Message of the user executing the command.
-     * @param {string[]} args - List of arguments provided by the user delimited by whitespace.
-     * @param {string} arg - The full string written by the user after the command.
-     * @param {object} ext
-     * @param {'add' | 'remove'} ext.action - Custom parameters provided to function call.
-     * @returns {string | void} Nothing if finished correctly, string if an error is thrown.
+     * 
+     * @param {Discord.CommandInteraction<"cached">} interaction 
+     * @param {Discord.Guild} guild
+     * @param {Discord.GuildMember} member
+     * @returns {boolean}
      */
-    land(m, args, arg, ext) {
-        let argSnowflake = args[0];
-        if(argSnowflake == null)
-            return "You must ping the user, or type their ID";
+    interactionPermitted(interaction, guild, member) {
+        return false;
+    }
 
-        let snowflake = Util.getSnowflakeFromDiscordPing(argSnowflake);
-        if(snowflake == null) {
-            return "The provided user ID is not correct";
+    /**
+     * 
+     * @param {Discord.CommandInteraction<"cached">} interaction 
+     * @param {Discord.Guild} guild
+     * @param {Discord.GuildMember} member
+     * @param {Discord.TextChannel | Discord.ThreadChannel} channel
+     */
+    async incomingInteraction(interaction, guild, member, channel) {
+        const subcommandName = interaction.options.getSubcommand();
+        switch(subcommandName) {
+        case 'add': {
+            let user = interaction.options.getUser('user', true);
+            this.action(interaction, true, user.id);
+            return;
         }
-
-        switch(ext.action) {
-        case 'add':
-            action.call(this, m, true, snowflake);
+        case 'remove': {
+            let user = interaction.options.getUser('user', true);
+            this.action(interaction, false, user.id);
             return;
-        case 'remove':
-            action.call(this, m, false, snowflake);
-            return;
+        }
         }
     }
-}
 
-/**
- * 
- * @this {Blacklist}
- * @param {Message} m - Message of the user executing the command.
- * @param {boolean} add 
- * @param {Discord.Snowflake} user
- */
-function action(m, add, user) {
-    this.bot.sql.transaction(async query => {
-        /** @type {Db.blacklist_users|null} */
-        var resultUsers = (await query(`SELECT * FROM blacklist_users WHERE user_id = ?`, [user])).results[0];
+    /**
+     * 
+     * @returns {RESTPostAPIApplicationCommandsJSONBody[]}
+     */
+    getSlashCommands() {
+        return [
+            new SlashCommandBuilder()
+            .setName('blacklist')
+            .setDescription('[Admin] Prevent a user from using bot commands.')
+            .setDefaultMemberPermissions('0')
+            .addSubcommand(subcommand => 
+                subcommand.setName('add')
+                    .setDescription('[Admin] Add a user to the blacklist, preventing them from using commands.')
+                    .addUserOption(option =>
+                        option.setName('user')
+                            .setDescription('The user to add to the blacklist.')
+                            .setRequired(true)
+                    )
+            ).addSubcommand(subcommand => 
+                subcommand.setName('remove')
+                    .setDescription('[Admin] Remove a user from the blacklist, allowing them use of commands.')
+                    .addUserOption(option =>
+                        option.setName('user')
+                            .setDescription('The user to remove from the blacklist.')
+                            .setRequired(true)
+                    )
+            ).toJSON()
+        ]
+    }
 
-        if(add) {
-            if(resultUsers) {
-                m.message.reply('This user is already blacklisted.').catch(logger.error);
-                return;
+    /**
+     * 
+     * @param {Discord.CommandInteraction<"cached">} interaction
+     * @param {boolean} add 
+     * @param {Discord.Snowflake} user
+     */
+    action(interaction, add, user) {
+        this.bot.sql.transaction(async query => {
+            await interaction.deferReply();
+
+            /** @type {Db.blacklist_users|null} */
+            var resultUsers = (await query(`SELECT * FROM blacklist_users WHERE user_id = ?`, [user])).results[0];
+
+            if(add) {
+                if(resultUsers) {
+                    await interaction.editReply('This user is already blacklisted.');
+                    return;
+                }
+                await query(`INSERT INTO blacklist_users (user_id) VALUES (?)`, [user]);
+                await interaction.editReply('User blacklisted.');
             }
-            await query(`INSERT INTO blacklist_users (user_id) VALUES (?)`, [user]);
-            m.message.reply('User blacklisted.').catch(logger.error);
-        }
-        else {
-            if(!resultUsers) {
-                m.message.reply('This user is not blacklisted.').catch(logger.error);
-                return;
+            else {
+                if(!resultUsers) {
+                    await interaction.editReply('This user is not blacklisted.');
+                    return;
+                }
+                await query(`DELETE FROM blacklist_users WHERE user_id = ?`, [user]);
+                await interaction.editReply('User no longer blacklisted.');
             }
-            await query(`DELETE FROM blacklist_users WHERE user_id = ?`, [user]);
-            m.message.reply('User no longer blacklisted.').catch(logger.error);
-        }
 
-        /** @type {Db.blacklist_users[]} */
-        var resultsUsers = (await query(`SELECT * FROM blacklist_users`)).results;
-        this.emit('blacklistChanged', resultsUsers);
-    }).catch(logger.error)
+            /** @type {Db.blacklist_users[]} */
+            var resultsUsers = (await query(`SELECT * FROM blacklist_users`)).results;
+            this.emit('blacklistChanged', resultsUsers);
+        }).catch(logger.error)
+    }
 }
