@@ -320,6 +320,13 @@ async function init(dbName) {
     client.on("error", (err) => {
         logger.error(err);
     });
+    client.on("shardError", err => {
+        logger.error(err);
+    })
+    client.on("shardDisconnect", err => {
+        logger.info('Disconnected. Reconnecting...');
+        setTimeout(() => { client.login(auth.token); }, 1000 * 10);
+    })
     client.on("disconnect", () => {
         logger.info('Disconnected. Reconnecting...');
         setTimeout(() => { client.login(auth.token); }, 1000 * 10);
