@@ -331,7 +331,10 @@ async function init(dbName) {
     const auth = await authenticate();
     const client = new Discord.Client({
         partials: ['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE', 'REACTION'],
-        intents: this.intents
+        intents: this.intents,
+        allowedMentions: {
+            parse: ["users"]
+        }
     });
     this.client = client;
 
