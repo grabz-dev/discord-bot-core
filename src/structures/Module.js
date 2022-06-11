@@ -89,6 +89,12 @@ export class Module extends EventEmitter {
     getSlashCommands() { return null }
 
     /**
+     * @param {Discord.Guild} guild
+     * @returns {Promise<RESTPostAPIApplicationCommandsJSONBody[]>}
+     */
+    async getSlashCommandsAsync(guild) { return [] }
+
+    /**
      * Called when a message is sent.
      * @param {Discord.Message} message - The message that was sent.
      */

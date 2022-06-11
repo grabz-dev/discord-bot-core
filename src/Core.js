@@ -33,6 +33,8 @@
  * @property {Locale} locale
  * @property {SQLWrapper} sql
  * @property {(guildId: Discord.Snowflake, name: string) => Discord.Snowflake | null} getRoleId
+ * @property {(guild: Discord.Guild) => Promise<void>} refreshGuildSlashCommands
+ * 
  * @property {string} token
  * @property {BotCache} cache
  * @property {Discord.Snowflake} fullAuthorityOverride
@@ -281,6 +283,43 @@ export class Core extends EventEmitter {
             arr.push(command);
         }
     }
+
+    /**
+     * @param {Discord.Guild} guild 
+     */
+    async refreshGuildSlashCommands(guild) {
+        logger.info(`Refreshing commands for ${guild.name}.`);
+        try {
+            await (async () => {
+                if(this.client.user == null) throw new Error('client.user is null');
+                const clientId = this.client.user.id;
+                const rest = new REST({ version: '9' }).setToken(this.data.token);
+                const commands = [];
+                for(const module of this.data.modules.values()) {
+                    let slash = module.getSlashCommands();
+                    if(slash != null) commands.push(...slash);
+                }
+
+                let guildCommands = commands.slice();
+                for(const module of this.data.modules.values()) {
+                    let slash = await module.getSlashCommandsAsync(guild);
+                    guildCommands.push(...slash);
+                }
+
+                await rest.put(
+                    Routes.applicationGuildCommands(clientId, guild.id),
+                    { body: guildCommands },
+                );
+            })();
+        }
+        catch(e) {
+            logger.warn(`Failed to refresh slash commands for ${guild.name}. Retrying in 1 minute.`);
+            logger.error(e);
+            setTimeout(() => {
+                this.refreshGuildSlashCommands(guild);
+            }, 60000);
+        }
+    }
 }
 
 /**
@@ -344,35 +383,17 @@ async function init(dbName) {
         
         await data.sql.init();
 
-        const entry = getEntry(data);
+        const entry = getEntry(this, data);
         await initModules.bind(this)(entry);
         initModuleEvents.bind(this)();
 
         this.removeAllCommands();
 
         await (async () => {
-            if(client.user == null) return;
-            const clientId = client.user.id;
-
-            const commands = [];
-            for(const module of this.data.modules.values()) {
-                let slash = module.getSlashCommands();
-                if(slash != null) commands.push(...slash);
-            }
-
-            logger.info('Started refreshing application (/) commands.');
-            const rest = new REST({ version: '9' }).setToken(this.data.token);
             for(const guild of Array.from(client.guilds.cache.values())) {
-                logger.info(`Refreshing commands for ${guild.name}.`);
-
-                await rest.put(
-                    Routes.applicationGuildCommands(clientId, guild.id),
-                    { body: commands },
-                );
-
+                await this.refreshGuildSlashCommands(guild);
                 await Util.Promise.sleep(1000);
             }
-            logger.info('Successfully reloaded application (/) commands.');
         })().catch(logger.error);
 
         this.emit("ready", entry);

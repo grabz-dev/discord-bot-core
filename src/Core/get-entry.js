@@ -6,10 +6,11 @@
 import Discord from 'discord.js';
 
 /**
+ * @param {import('../Core').Core} core
  * @param {Core.Data} data
  * @returns {Core.Entry}
  */
-export function getEntry(data) {
+export function getEntry(core, data) {
     /** @type {Core.Entry} */
     const entry = Object.freeze({
         client: data.client,
@@ -33,6 +34,9 @@ export function getEntry(data) {
                 return null;
             return id;
         },
+        refreshGuildSlashCommands: async function(guild) {
+            return await core.refreshGuildSlashCommands(guild);
+        }
     });
 
     return entry;
