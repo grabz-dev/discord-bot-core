@@ -358,7 +358,9 @@ async function init(dbName) {
     }
     this.data = data;
     
-
+    client.on("debug", msg => {
+        logger.info(msg);
+    })
     client.on("error", (err) => {
         logger.error(err);
     });
