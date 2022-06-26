@@ -150,6 +150,16 @@ export class Core extends EventEmitter {
     }
 
     /**
+     *
+     * @param {(guild:Discord.Guild) => void} func
+     */
+    call(func) {
+        for(const guild of this.data.client.guilds.cache.values()) {
+            try { func(guild) } catch(e) { console.error(e) }
+        }
+    }
+
+    /**
      * 
      * @param {any} module
      * @returns {Module | null}
