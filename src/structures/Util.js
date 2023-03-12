@@ -183,7 +183,7 @@ export const Util = Object.freeze({
      */
     isMemberAdmin : function(member) {
         for(let role of member.roles.cache) {                    //check user roles
-            if(role[1].permissions.has('ADMINISTRATOR')) {   //if one of roles is administrator
+            if(role[1].permissions.has(Discord.PermissionsBitField.Flags.Administrator)) {   //if one of roles is administrator
                 return true;                               //override
             }
         }
@@ -196,7 +196,7 @@ export const Util = Object.freeze({
      */
     isMemberModerator : function(member) {
         for(let role of member.roles.cache) {                    //check user roles
-            if(role[1].permissions.has("MANAGE_MESSAGES")) { //if one of roles is moderator
+            if(role[1].permissions.has(Discord.PermissionsBitField.Flags.ManageMessages)) { //if one of roles is moderator
                 return true;                               //override
             }
         }

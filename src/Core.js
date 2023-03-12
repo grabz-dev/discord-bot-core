@@ -340,7 +340,7 @@ async function init(dbName) {
     logger.info('Looking for auth.json...');
     const auth = await authenticate();
     const client = new Discord.Client({
-        partials: ['USER', 'CHANNEL', 'GUILD_MEMBER', 'MESSAGE', 'REACTION'],
+        partials: [Discord.Partials.User, Discord.Partials.Channel, Discord.Partials.GuildMember, Discord.Partials.Message, Discord.Partials.Reaction],
         intents: this.intents,
         allowedMentions: {
             parse: ["users"]
@@ -427,13 +427,14 @@ async function init(dbName) {
  */
 function displayHelp(bm, args, arg, ext) {
     (async () => {
-        let embed = new Discord.MessageEmbed({
+        /** @type {Discord.APIEmbed} */
+        let embed = {
             //color: 0,
             title: ":information_source: Help",
             footer: {
                 text: "Get category help: !help <category> • Get command help: !help <command>"
             }
-        });
+        }
         embed.fields = [];
 
         /** @type {Command[]} */

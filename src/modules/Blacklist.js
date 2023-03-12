@@ -74,6 +74,8 @@ export default class Blacklist extends Module {
      * @param {Discord.TextChannel | Discord.ThreadChannel} channel
      */
     async incomingInteraction(interaction, guild, member, channel) {
+        if(!interaction.isChatInputCommand()) return;
+
         const subcommandName = interaction.options.getSubcommand();
         switch(subcommandName) {
         case 'add': {

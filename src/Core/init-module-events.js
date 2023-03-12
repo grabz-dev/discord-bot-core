@@ -46,7 +46,7 @@ export function initModuleEvents() {
 
     client.on('messageCreate', async message => { //check each message to see if it's a command
         if(message.author.bot) return;
-        if(message.type !== 'DEFAULT' && message.type !== 'REPLY') return;
+        if(message.type !== Discord.MessageType.Default && message.type !== Discord.MessageType.Reply) return;
         
         if(message.channel instanceof Discord.DMChannel) {
             try {
@@ -61,7 +61,7 @@ export function initModuleEvents() {
             }
             return;
         }
-        if(message.channel instanceof Discord.NewsChannel)
+        if(message.channel instanceof Discord.NewsChannel || message.channel instanceof Discord.StageChannel)
             return;
         
         try {
@@ -105,7 +105,7 @@ export function initModuleEvents() {
         }
     
         if(messageNew.author.bot) return;
-        if(messageNew.type !== 'DEFAULT') return;
+        if(messageNew.type !== Discord.MessageType.Default) return;
 
         try {
             if(partialOld.partial) var messageOld = await partialOld.fetch();
@@ -116,7 +116,7 @@ export function initModuleEvents() {
         }
     
         if(messageOld.author.bot) return;
-        if(messageOld.type !== 'DEFAULT') return;
+        if(messageOld.type !== Discord.MessageType.Default) return;
 
         try {
             for(const key of modules.keys()) {
@@ -131,7 +131,7 @@ export function initModuleEvents() {
     client.on('messageDelete', async message => {
         if(!message.partial) {
             if(message.author.bot) return;
-            if(message.type !== 'DEFAULT') return;
+            if(message.type !== Discord.MessageType.Default) return;
         }
 
         try {

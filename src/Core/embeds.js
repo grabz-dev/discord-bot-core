@@ -12,15 +12,16 @@ import { Util } from '../structures/Util.js';
  * @param {Discord.GuildMember} member
  * @param {Locale} locale
  * @param {Core.Command[]} commands
- * @returns {Discord.MessageEmbed|null}
+ * @returns {Discord.APIEmbed|null}
  */
 export function getCategoryHelpEmbed(member, locale, commands) {
-    let embed = new Discord.MessageEmbed({
+    /** @type {Discord.APIEmbed} */
+    let embed = {
         title: ":information_source: Category Help",
         footer: {
             text: "Get command help: !help <command>"
         }
-    });
+    }
 
     let counter = 0;
     for(let command of commands) {
@@ -38,7 +39,7 @@ export function getCategoryHelpEmbed(member, locale, commands) {
 /**
  * @param {Core.Command} command - The queried command.
  * @param {(Discord.Snowflake | null)[]} roleIds - Array of role IDs that can access the queried command.
- * @returns {Discord.MessageEmbed}
+ * @returns {Discord.APIEmbed}
  */
 export function getCommandDeniedEmbed(command, roleIds) {
     let desc = "Your clearance level is too low to call `!" + command.baseNames[0];
@@ -56,11 +57,12 @@ export function getCommandDeniedEmbed(command, roleIds) {
         desc += "You need to be an administrator.";
     }
 
-    return new Discord.MessageEmbed({
+    /** @type {Discord.APIEmbed} */
+    return {
         color: 6824314,
         title: ":octopus: Access Denied",
         description: desc
-    });
+    };
 }
 
 /**
@@ -70,14 +72,15 @@ export function getCommandDeniedEmbed(command, roleIds) {
  * @param {Locale} locale
  * @param {Core.Command} command 
  * @param {string | null} errStr
- * @returns {Discord.MessageEmbed|null}
+ * @returns {Discord.APIEmbed|null}
  */
 export function getCommandHelpEmbed(member, type, locale, command, errStr) {
-    let embed = new Discord.MessageEmbed({
+    /** @type {Discord.APIEmbed} */
+    let embed = {
         color: type === "error" ? 16763981 : undefined,
         title: type === "error" ? ":warning: Command Error" : ":information_source: Command Help",
         description: errStr || ""
-    });
+    }
 
     if(!this.canUseCommand(member, command)) return null;
 
@@ -88,7 +91,7 @@ export function getCommandHelpEmbed(member, type, locale, command, errStr) {
 }
 
 /**
- * @param {Discord.MessageEmbed} embed
+ * @param {Discord.APIEmbed} embed
  * @param {Core.Command} command
  * @param {string[]} hd 
  */

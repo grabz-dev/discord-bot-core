@@ -61,6 +61,8 @@ export default class Roles extends Module {
      * @param {Discord.TextChannel | Discord.ThreadChannel} channel
      */
     async incomingInteraction(interaction, guild, member, channel) {
+        if(!interaction.isChatInputCommand()) return;
+        
         const commandName = interaction.commandName;
         switch(commandName) {
         case 'role': {
