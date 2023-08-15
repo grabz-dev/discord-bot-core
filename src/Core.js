@@ -119,9 +119,9 @@ export class Core extends EventEmitter {
             }
         })();
         
-        init.bind(this)(opts.dbName);
+        this.#init.call(this, opts.dbName);
     }
-
+    
     /**
      * @function
      * @variation ready
@@ -330,92 +330,93 @@ export class Core extends EventEmitter {
             }, 60000);
         }
     }
-}
 
-/**
- * @this {Core}
- * @param {string} dbName
- */
-async function init(dbName) {
-    logger.info('Looking for auth.json...');
-    const auth = await authenticate();
-    const client = new Discord.Client({
-        partials: [Discord.Partials.User, Discord.Partials.Channel, Discord.Partials.GuildMember, Discord.Partials.Message, Discord.Partials.Reaction],
-        intents: this.intents,
-        allowedMentions: {
-            parse: ["users"]
-        }
-    });
-    this.client = client;
-
-    /** @type {Data} */
-    const data = {
-        client: client,
-        commands: {
-            name: new Discord.Collection(),
-            category: new Discord.Collection
-        },
-        modules: new Discord.Collection(),
-        roles: new Discord.Collection(),
-        locale: await (async () => {
-            logger.info("Loading strings...");
-            return await getLocale();
-        })(),
-        sql: new SQLWrapper(auth.sql, dbName),
-        token: auth.token,
-        cache: new BotCache(),
-        fullAuthorityOverride: auth.full_authority
-    }
-    this.data = data;
-    
-    //client.on("debug", msg => {
-    //    logger.info(msg);
-    //})
-    client.on("error", (err) => {
-        logger.error(err);
-    });
-    client.on("shardError", err => {
-        logger.error(err);
-    })
-    client.on("shardDisconnect", err => {
-        logger.info('Disconnected. Reconnecting...');
-        setTimeout(() => { client.login(auth.token); }, 1000 * 10);
-    })
-    client.on("disconnect", () => {
-        logger.info('Disconnected. Reconnecting...');
-        setTimeout(() => { client.login(auth.token); }, 1000 * 10);
-    });
-    client.on('ready', async () => {
-        if(client.user == null)
-            throw 'Failed to connect.';
-
-        if(!this.firstConnect) {
-            logger.info(`Successfully reconnected as: ${client.user.username} - (${client.user.id})`);
-            return;
-        }
-        logger.info(`Logged in as: ${client.user.username} - (${client.user.id})`);
-        this.firstConnect = false;
-        
-        await data.sql.init();
-
-        const entry = getEntry(this, data);
-        await initModules.bind(this)(entry);
-        initModuleEvents.bind(this)();
-
-        this.removeAllCommands();
-
-        await (async () => {
-            for(const guild of Array.from(client.guilds.cache.values())) {
-                await this.refreshGuildSlashCommands(guild);
-                await Util.Promise.sleep(1000);
+    /**
+     * @param {string} dbName
+     */
+    async #init(dbName) {
+        logger.info('Looking for auth.json...');
+        const auth = await authenticate();
+        const client = new Discord.Client({
+            partials: [Discord.Partials.User, Discord.Partials.Channel, Discord.Partials.GuildMember, Discord.Partials.Message, Discord.Partials.Reaction],
+            intents: this.intents,
+            allowedMentions: {
+                parse: ["users"]
             }
-        })().catch(logger.error);
+        });
+        this.client = client;
 
-        this.emit("ready", entry);
-    });
+        /** @type {Data} */
+        const data = {
+            client: client,
+            commands: {
+                name: new Discord.Collection(),
+                category: new Discord.Collection
+            },
+            modules: new Discord.Collection(),
+            roles: new Discord.Collection(),
+            locale: await (async () => {
+                logger.info("Loading strings...");
+                return await getLocale();
+            })(),
+            sql: new SQLWrapper(auth.sql, dbName),
+            token: auth.token,
+            cache: new BotCache(),
+            fullAuthorityOverride: auth.full_authority
+        }
+        this.data = data;
+        
+        //client.on("debug", msg => {
+        //    logger.info(msg);
+        //})
+        client.on("error", (err) => {
+            logger.error(err);
+        });
+        client.on("shardError", err => {
+            logger.error(err);
+        })
+        client.on("shardDisconnect", err => {
+            logger.info('Disconnected. Reconnecting...');
+            setTimeout(() => { client.login(auth.token); }, 1000 * 10);
+        })
+        client.on("disconnect", () => {
+            logger.info('Disconnected. Reconnecting...');
+            setTimeout(() => { client.login(auth.token); }, 1000 * 10);
+        });
+        client.on('ready', async () => {
+            if(client.user == null)
+                throw 'Failed to connect.';
 
-    logger.info('Logging in...');
-    await client.login(auth.token);
+            if(!this.firstConnect) {
+                logger.info(`Successfully reconnected as: ${client.user.username} - (${client.user.id})`);
+                return;
+            }
+            logger.info(`Logged in as: ${client.user.username} - (${client.user.id})`);
+            this.firstConnect = false;
+            
+            await data.sql.init();
+
+            const entry = getEntry(this, data);
+            // @ts-ignore
+            // todo ts bug
+            await initModules.bind(this)(entry);
+            initModuleEvents.bind(this)();
+
+            this.removeAllCommands();
+
+            await (async () => {
+                for(const guild of Array.from(client.guilds.cache.values())) {
+                    await this.refreshGuildSlashCommands(guild);
+                    await Util.Promise.sleep(1000);
+                }
+            })().catch(logger.error);
+
+            this.emit("ready", entry);
+        });
+
+        logger.info('Logging in...');
+        await client.login(auth.token);
+    }
 }
 
 /**
