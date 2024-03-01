@@ -144,4 +144,10 @@ export class Module extends EventEmitter {
      * @param {Discord.Presence} newPresence 
      */
     onPresenceUpdate(oldPresence, newPresence) {}
+
+    /**
+     * Emitted whenever an interaction is created.
+     * @param {Discord.Interaction} interaction 
+     */
+    onInteractionCreate(interaction) {}
 }

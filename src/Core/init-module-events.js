@@ -190,4 +190,15 @@ export function initModuleEvents() {
             console.error(e);
         }
     });
+
+    client.on('interactionCreate', interaction => {
+        try {
+            for(const key of modules.keys()) {
+                const module = /** @type {Module} */ (modules.get(key));
+                if(typeof module.onInteractionCreate === 'function') module.onInteractionCreate(interaction);
+            }
+        } catch(e) {
+            console.error(e);
+        }
+    });
 }
