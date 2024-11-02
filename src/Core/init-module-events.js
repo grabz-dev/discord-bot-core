@@ -97,8 +97,14 @@ export function initModuleEvents() {
 
     client.on('messageUpdate', async (partialOld, partialNew) => {
         try {
-            if(partialNew.partial) var messageNew = await partialNew.fetch();
-            else var messageNew = partialNew;
+            if(partialNew.partial) {
+                /** @type {Discord.OmitPartialGroupDMChannel<Discord.Message<boolean>>|Discord.Message<boolean>} */
+                var messageNew = await partialNew.fetch();
+            }
+            else {
+                /** @type {Discord.OmitPartialGroupDMChannel<Discord.Message<boolean>>|Discord.Message<boolean>} */
+                var messageNew = partialNew;
+            }
         } catch(err) {
             logger.error(err);
             return;
@@ -108,8 +114,14 @@ export function initModuleEvents() {
         if(messageNew.type !== Discord.MessageType.Default) return;
 
         try {
-            if(partialOld.partial) var messageOld = await partialOld.fetch();
-            else var messageOld = partialOld;
+            if(partialOld.partial) {
+                /** @type {Discord.OmitPartialGroupDMChannel<Discord.Message<boolean>>|Discord.Message<boolean>} */
+                var messageOld = await partialOld.fetch();
+            }
+            else {
+                /** @type {Discord.OmitPartialGroupDMChannel<Discord.Message<boolean>>|Discord.Message<boolean>} */
+                var messageOld = partialOld;
+            }
         } catch(err) {
             logger.error(err);
             return;
